@@ -20,7 +20,6 @@ poetry install
 
 ### 3. 環境変数の設定
 `.env.sample`を同じディレクトリにコピーし、ファイル名を`.env`に変更後、以下の内容を設定してください。
-thumbnails
 ```env
 INPUT_DIRECTORY=/path/to/your/videos
 OUTPUT_DIRECTORY=/path/to/save/thumbnails
