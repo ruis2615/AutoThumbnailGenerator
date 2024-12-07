@@ -27,7 +27,7 @@ OUTPUT_DIRECTORY=/path/to/save/thumbnails
 - `INPUT_DIRECTORY`：動画ファイルが格納されているディレクトリのパス
 - `OUTPUT_DIRECTORY`：サムネイル画像を保存するディレクトリのパス
 
-4. 実行方法
+### 4. 実行方法
 Poetry環境内でスクリプトを実行：
 ```shell
 poetry run python main.py
@@ -50,7 +50,7 @@ times_to_extract = [20.0, 150.0, 180.0, 300.0]  # 抽出したい時間（秒）
 ```
 
 ## 注意事項
-- poetry + pyenvの環境で構築しているため、pip環境とはご自身でカスタマイズしてください。
+- poetry + pyenvの環境で構築しているため、その他の環境の場合は適宜コマンドを修正してください。
 - 出力ディレクトリは自動的に作成されます。
 - 指定した時間が動画の長さを超える場合は、そのフレームはスキップされます。
 
