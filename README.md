@@ -23,9 +23,11 @@ poetry install
 ```env
 INPUT_DIRECTORY=/path/to/your/videos
 OUTPUT_DIRECTORY=/path/to/save/thumbnails
+EXTRACT_TIMES=20,2:30,3m,5m
 ```
 - `INPUT_DIRECTORY`：動画ファイルが格納されているディレクトリのパス
 - `OUTPUT_DIRECTORY`：サムネイル画像を保存するディレクトリのパス
+- `EXTRACT_TIMES`：動画から抽出する時間を指定(フォーマットについては「カスタマイズ」をご覧ください)
 
 ### 4. 実行方法
 Poetry環境内でスクリプトを実行：
@@ -44,10 +46,14 @@ video_extensions = ('.mp4', '.avi', '.mov', '.mkv')
 - デフォルトの抽出時間：20秒, 150秒, 180秒, 300秒
 
 ## カスタマイズ
-抽出時間を変更する場合は、main.pyの以下の部分を編集してください：
-```python
-times_to_extract = [20.0, 150.0, 180.0, 300.0]  # 抽出したい時間（秒）のリスト
+抽出時間を変更する場合は、`env`の以下の部分を編集してください：
+```env
+EXTRACT_TIMES=20,2:30,3m,5m
 ```
+### 指定できるフォーマット
+- `10` or `30` (秒数のみでの指定可能)
+- `2:30` or `1:10:10` (`時:分:秒`のフォーマットで指定可能)
+- `3s` or `3m` or `3h` (`s=秒`, `m=分`, `h=時`での指定も可能。ただし、`1h5m`といった組み合わせは不可)
 
 ## 注意事項
 - poetry + pyenvの環境で構築しているため、その他の環境の場合は適宜コマンドを修正してください。

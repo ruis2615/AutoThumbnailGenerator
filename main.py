@@ -3,6 +3,51 @@ import cv2
 from datetime import datetime
 from dotenv import load_dotenv
 
+def parse_time_str(time_str):
+    """
+    時間文字列を秒数に変換する関数
+    
+    Parameters:
+    time_str (str): "1:7:40"や"1:8"、"30"、"3m"、"1h"などの時間文字列
+    
+    Returns:
+    float: 秒数
+    """
+    # h,m,s指定の場合の処理
+    if any(unit in time_str.lower() for unit in ['h', 'm', 's']):
+        time_str = time_str.lower()
+        total_seconds = 0.0
+        
+        # 時間(h)の処理
+        if 'h' in time_str:
+            hours = float(time_str.split('h')[0])
+            total_seconds += hours * 3600
+            time_str = time_str.split('h')[1]
+            
+        # 分(m)の処理
+        if 'm' in time_str:
+            minutes = float(time_str.split('m')[0])
+            total_seconds += minutes * 60
+            time_str = time_str.split('m')[1]
+            
+        # 秒(s)の処理
+        if 's' in time_str:
+            seconds = float(time_str.split('s')[0])
+            total_seconds += seconds
+            
+        return total_seconds
+    
+    # 従来の時:分:秒形式の処理
+    parts = time_str.split(':')
+    if len(parts) == 3:  # 時:分:秒
+        hours, minutes, seconds = map(float, parts)
+        return hours * 3600 + minutes * 60 + seconds
+    elif len(parts) == 2:  # 分:秒
+        minutes, seconds = map(float, parts)
+        return minutes * 60 + seconds
+    else:  # 秒のみ
+        return float(parts[0])
+
 def extract_frames_from_video(video_path, times_in_seconds, output_dir):
     """
     動画から指定された複数の時間のフレームを抽出する関数
@@ -74,19 +119,22 @@ def extract_frames_from_video(video_path, times_in_seconds, output_dir):
         # リソースを解放
         cap.release()
 
-def process_videos_in_directory(input_dir, output_dir, times_in_seconds):
+def process_videos_in_directory(input_dir, output_dir, time_strings):
     """
     ディレクトリ内の全ての動画ファイルを処理する関数
     
     Parameters:
     input_dir (str): 入力ディレクトリのパス
     output_dir (str): 出力先ディレクトリのパス
-    times_in_seconds (list): 抽出したい時間（秒）のリスト
+    time_strings (list): 抽出したい時間の文字列のリスト（例: ["1:7:40", "1:8", "30"]）
     
     Returns:
     dict: 各動画ファイルごとの処理結果を含む辞書
     """
     results = {}
+    
+    # 時間文字列を秒数に変換
+    times_in_seconds = [parse_time_str(t) for t in time_strings]
     
     # 出力ディレクトリが存在しない場合は作成
     if not os.path.exists(output_dir):
@@ -128,10 +176,12 @@ if __name__ == "__main__":
         print("エラー：.envファイルにINPUT_DIRECTORYとOUTPUT_DIRECTORYを設定する必要があります")
         exit(1)
         
-    times_to_extract = [20.0, 150.0, 180.0, 300.0]  # 抽出したい時間（秒）のリスト
+    # .envファイルから抽出時間のリストを読み込む
+    time_strings_env = os.getenv('EXTRACT_TIMES', "20,2:30,3m,5m")  # デフォルト値を設定
+    time_strings = [t.strip() for t in time_strings_env.split(',')]
     
     # 処理実行
-    results = process_videos_in_directory(input_directory, output_directory, times_to_extract)
+    results = process_videos_in_directory(input_directory, output_directory, time_strings)
     
     # 処理結果の表示
     print("\n処理結果：")
