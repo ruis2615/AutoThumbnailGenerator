@@ -1,0 +1,8 @@
+{
+    "file_name_1.mp4": {
+        "extract_times": "20,2:30,3m,5m"
+    },
+    "file_name_2.mp4": {
+        "extract_times": "20,2:30,3m,5m"
+    }
+}

@@ -1,5 +1,7 @@
 import os
+import sys
 import cv2
+import json
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -163,6 +165,49 @@ def process_videos_in_directory(input_dir, output_dir, time_strings):
     
     return results
 
+def process_videos_from_json(json_path, input_dir, output_dir):
+    """
+    JSONファイルから動画ごとの抽出時間を読み込んで処理する関数
+    
+    Parameters:
+    json_path (str): JSONファイルのパス
+    input_dir (str): 入力ディレクトリのパス
+    output_dir (str): 出力先ディレクトリのパス
+    
+    Returns:
+    dict: 処理結果を含む辞書
+    """
+    with open(json_path, 'r', encoding='utf-8') as f:
+        video_data = json.load(f)
+    
+    results = {}
+    for video_name, data in video_data.items():
+        video_path = os.path.join(input_dir, video_name)
+        if not os.path.exists(video_path):
+            print(f"警告: 動画ファイルが見つかりません - {video_path}")
+            continue
+            
+        time_strings = data['extract_times'].split(',') if data['extract_times'] else []
+        if not time_strings:
+            print(f"警告: 抽出時間が指定されていません - {video_name}")
+            continue
+            
+        try:
+            times_in_seconds = [parse_time_str(t.strip()) for t in time_strings]
+            saved_paths = extract_frames_from_video(video_path, times_in_seconds, output_dir)
+            results[video_path] = {
+                'success': True,
+                'saved_frames': saved_paths
+            }
+        except Exception as e:
+            print(f"動画の処理中にエラーが発生しました：{video_path}: {str(e)}")
+            results[video_path] = {
+                'success': False,
+                'error': str(e)
+            }
+    
+    return results
+
 # 使用例
 if __name__ == "__main__":
     # .envファイルから環境変数を読み込む
@@ -175,13 +220,17 @@ if __name__ == "__main__":
     if not input_directory or not output_directory:
         print("エラー：.envファイルにINPUT_DIRECTORYとOUTPUT_DIRECTORYを設定する必要があります")
         exit(1)
-        
-    # .envファイルから抽出時間のリストを読み込む
-    time_strings_env = os.getenv('EXTRACT_TIMES', "20,2:30,3m,5m")  # デフォルト値を設定
-    time_strings = [t.strip() for t in time_strings_env.split(',')]
     
-    # 処理実行
-    results = process_videos_in_directory(input_directory, output_directory, time_strings)
+    # コマンドライン引数でJSONファイルが指定されているか確認
+    if len(sys.argv) > 1 and sys.argv[1].endswith('.json'):
+        # JSONモード
+        json_path = sys.argv[1]
+        results = process_videos_from_json(json_path, input_directory, output_directory)
+    else:
+        # 通常モード（.envファイルから抽出時間を読み込む）
+        time_strings_env = os.getenv('EXTRACT_TIMES', "20,2:30,3m,5m")  # デフォルト値を設定
+        time_strings = [t.strip() for t in time_strings_env.split(',')]
+        results = process_videos_in_directory(input_directory, output_directory, time_strings)
     
     # 処理結果の表示
     print("\n処理結果：")
